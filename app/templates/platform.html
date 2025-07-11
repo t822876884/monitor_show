@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}{{ platform.title }} - 直播监控系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header">平台信息</div>
+            <div class="card-body">
+                <img src="{{ platform.img }}" class="img-fluid mb-3" alt="{{ platform.title }}" onerror="this.src='{{ url_for('static', filename='img/no-image.png') }}'">
+                <h5>{{ platform.title }}</h5>
+                <p>直播间数量: {{ platform.number }}</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-warning toggle-favorite" data-type="platform" data-id="{{ platform.platform_id }}" data-status="{{ platform.is_favorite|int }}">
+                        <i class="bi {% if platform.is_favorite %}bi-star-fill{% else %}bi-star{% endif %}"></i> 
+                        {% if platform.is_favorite %}取消收藏{% else %}收藏{% endif %}
+                    </button>
+                    <a href="{{ url_for('main.index') }}" class="btn btn-secondary">返回首页</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header">直播间列表</div>
+            <div class="card-body">
+                <div class="row">
+                    {% for stream in livestreams %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 {% if not stream.is_online %}bg-light{% endif %}">
+                            <div class="position-relative">
+                                <img src="{{ stream.img }}" class="card-img-top" alt="{{ stream.title }}" onerror="this.src='{{ url_for('static', filename='img/no-image.png') }}'">
+                                {% if stream.is_online %}
+                                <span class="position-absolute top-0 start-0 badge bg-success m-2">在线</span>
+                                {% else %}
+                                <span class="position-absolute top-0 start-0 badge bg-secondary m-2">离线</span>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ stream.title }}</h5>
+                                <div class="btn-group w-100 mb-2">
+                                    <a href="{{ url_for('main.player', stream_id=stream.stream_id) }}" class="btn btn-primary {% if not stream.is_online %}disabled{% endif %}">播放</a>
+                                    <button class="btn btn-success start-download {% if not stream.is_online %}disabled{% endif %}" data-id="{{ stream.stream_id }}">下载</button>
+                                </div>
+                                <div class="btn-group w-100">
+                                    <button class="btn btn-outline-warning toggle-favorite" data-type="livestream" data-id="{{ stream.stream_id }}" data-status="{{ stream.is_favorite|int }}">
+                                        <i class="bi {% if stream.is_favorite %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger toggle-block" data-type="livestream" data-id="{{ stream.stream_id }}" data-status="{{ stream.is_blocked|int }}">
+                                        <i class="bi {% if stream.is_blocked %}bi-x-circle-fill{% else %}bi-x-circle{% endif %}"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if not livestreams %}
+                    <div class="col-12 text-center">
+                        <p class="text-muted">暂无直播间</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4" id="favorite">
+            <div class="card-header">收藏直播间</div>
+            <div class="card-body">
+                <div class="row">
+                    {% for stream in favorite_streams %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 {% if not stream.is_online %}bg-light{% endif %}">
+                            <div class="position-relative">
+                                <img src="{{ stream.img }}" class="card-img-top" alt="{{ stream.title }}" onerror="this.src='{{ url_for('static', filename='img/no-image.png') }}'">
+                                {% if stream.is_online %}
+                                <span class="position-absolute top-0 start-0 badge bg-success m-2">在线</span>
+                                {% else %}
+                                <span class="position-absolute top-0 start-0 badge bg-secondary m-2">离线</span>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ stream.title }}</h5>
+                                <div class="btn-group w-100 mb-2">
+                                    <a href="{{ url_for('main.player', stream_id=stream.stream_id) }}" class="btn btn-primary {% if not stream.is_online %}disabled{% endif %}">播放</a>
+                                    <button class="btn btn-success start-download {% if not stream.is_online %}disabled{% endif %}" data-id="{{ stream.stream_id }}">下载</button>
+                                </div>
+                                <button class="btn btn-outline-warning w-100 toggle-favorite" data-type="livestream" data-id="{{ stream.stream_id }}" data-status="{{ stream.is_favorite|int }}">
+                                    <i class="bi {% if stream.is_favorite %}bi-star-fill{% else %}bi-star{% endif %}"></i> 取消收藏
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if not favorite_streams %}
+                    <div class="col-12 text-center">
+                        <p class="text-muted">暂无收藏直播间</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // 开始下载
+    $('.start-download').click(function() {
+        const streamId = $(this).data('id');
+        const btn = $(this);
+        
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> 处理中...');
+        
+        $.getJSON(`/api/start_download/${streamId}`, function(data) {
+            if (data.success) {
+                alert('下载任务已创建，可在下载管理页面查看进度');
+            } else {
+                alert('创建下载任务失败: ' + data.message);
+            }
+            btn.prop('disabled', false).text('下载');
+        }).fail(function() {
+            alert('创建下载任务失败，请稍后重试');
+            btn.prop('disabled', false).text('下载');
+        });
+    });
+});
+</script>
+{% endblock %}

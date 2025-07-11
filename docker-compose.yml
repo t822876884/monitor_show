@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  monitor_video:
+    build: .
+    container_name: monitor_video
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./db:/app/db
+      - ./downloads:/app/downloads
+    restart: unless-stopped

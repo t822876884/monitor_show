@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}{{ stream.title }} - 直播监控系统{% endblock %}
+
+{% block styles %}
+<link href="https://cdn.jsdelivr.net/npm/video.js@7.20.3/dist/video-js.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@videojs/themes@1/dist/forest/index.css" rel="stylesheet">
+<style>
+    .video-container {
+        width: 100%;
+        height: 0;
+        padding-bottom: 56.25%; /* 16:9 宽高比 */
+        position: relative;
+    }
+    .video-container .video-js {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .stream-info {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ stream.title }}</h5>
+        <div>
+            <button class="btn btn-success start-download" data-id="{{ stream.stream_id }}">下载</button>
+            <a href="{{ url_for('main.platform', platform_id=stream.platform_id) }}" class="btn btn-secondary">返回</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="video-container">
+            <video id="player" class="video-js vjs-theme-forest" controls preload="auto">
+                <source src="{{ stream.address }}" type="application/x-mpegURL">
+                <source src="{{ stream.address }}" type="rtmp/flv">
+                <source src="{{ stream.address }}" type="video/flv">
+                <p class="vjs-no-js">要查看此视频，请启用JavaScript并考虑升级到支持HTML5视频的Web浏览器</p>
+            </video>
+        </div>
+        
+        <div class="stream-info">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">直播间信息</div>
+                        <div class="card-body">
+                            <p><strong>平台:</strong> {{ stream.platform.title }}</p>
+                            <p><strong>状态:</strong> 
+                                {% if stream.is_online %}
+                                <span class="badge bg-success">在线</span>
+                                {% else %}
+                                <span class="badge bg-secondary">离线</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>最后检查:</strong> {{ stream.last_check.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            <p><strong>直播地址:</strong> <small class="text-muted">{{ stream.address }}</small></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">操作</div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success start-download" data-id="{{ stream.stream_id }}">开始下载</button>
+                                <button class="btn btn-outline-warning toggle-favorite" data-type="livestream" data-id="{{ stream.stream_id }}" data-status="{{ stream.is_favorite|int }}">
+                                    <i class="bi {% if stream.is_favorite %}bi-star-fill{% else %}bi-star{% endif %}"></i> 
+                                    {% if stream.is_favorite %}取消收藏{% else %}收藏{% endif %}
+                                </button>
+                                <button class="btn btn-outline-danger toggle-block" data-type="livestream" data-id="{{ stream.stream_id }}" data-status="{{ stream.is_blocked|int }}">
+                                    <i class="bi {% if stream.is_blocked %}bi-x-circle-fill{% else %}bi-x-circle{% endif %}"></i>
+                                    {% if stream.is_blocked %}取消屏蔽{% else %}屏蔽{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/video.js@7.20.3/dist/video.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/videojs-flash@2.2.1/dist/videojs-flash.min.js"></script>
+<script>
+$(document).ready(function() {
+    // 初始化播放器
+    var player = videojs('player', {
+        fluid: true,
+        techOrder: ['html5', 'flash'],
+        autoplay: true,
+        liveui: true
+    });
+    
+    // 开始下载
+    $('.start-download').click(function() {
+        const streamId = $(this).data('id');
+        const btn = $(this);
+        
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> 处理中...');
+        
+        $.getJSON(`/api/start_download/${streamId}`, function(data) {
+            if (data.success) {
+                alert('下载任务已创建，可在下载管理页面查看进度');
+            } else {
+                alert('创建下载任务失败: ' + data.message);
+            }
+            btn.prop('disabled', false).text('下载');
+        }).fail(function() {
+            alert('创建下载任务失败，请稍后重试');
+            btn.prop('disabled', false).text('下载');
+        });
+    });
+});
+</script>
+{% endblock %}

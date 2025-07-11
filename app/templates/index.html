@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 直播监控系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header">平台分类</div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('main.index') }}" class="list-group-item list-group-item-action active">全部</a>
+                <a href="#favorite" class="list-group-item list-group-item-action">收藏</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header">平台列表</div>
+            <div class="card-body">
+                <div class="row">
+                    {% for platform in platforms %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <img src="{{ platform.img }}" class="card-img-top" alt="{{ platform.title }}" onerror="this.src='{{ url_for('static', filename='img/no-image.png') }}'">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ platform.title }}</h5>
+                                <p class="card-text">直播间数量: {{ platform.number }}</p>
+                                <a href="{{ url_for('main.platform', platform_id=platform.platform_id) }}" class="btn btn-primary">查看</a>
+                                <button class="btn btn-outline-warning toggle-favorite" data-type="platform" data-id="{{ platform.platform_id }}" data-status="{{ platform.is_favorite|int }}">
+                                    <i class="bi {% if platform.is_favorite %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                                </button>
+                                <button class="btn btn-outline-danger toggle-block" data-type="platform" data-id="{{ platform.platform_id }}" data-status="{{ platform.is_blocked|int }}">
+                                    <i class="bi {% if platform.is_blocked %}bi-x-circle-fill{% else %}bi-x-circle{% endif %}"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4" id="favorite">
+            <div class="card-header">收藏平台</div>
+            <div class="card-body">
+                <div class="row">
+                    {% for platform in favorite_platforms %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <img src="{{ platform.img }}" class="card-img-top" alt="{{ platform.title }}" onerror="this.src='{{ url_for('static', filename='img/no-image.png') }}'">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ platform.title }}</h5>
+                                <p class="card-text">直播间数量: {{ platform.number }}</p>
+                                <a href="{{ url_for('main.platform', platform_id=platform.platform_id) }}" class="btn btn-primary">查看</a>
+                                <button class="btn btn-outline-warning toggle-favorite" data-type="platform" data-id="{{ platform.platform_id }}" data-status="{{ platform.is_favorite|int }}">
+                                    <i class="bi {% if platform.is_favorite %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if not favorite_platforms %}
+                    <div class="col-12 text-center">
+                        <p class="text-muted">暂无收藏平台</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

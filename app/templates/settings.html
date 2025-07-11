@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}系统设置 - 直播监控系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">系统设置</div>
+    <div class="card-body">
+        <form method="post" action="{{ url_for('main.update_settings') }}">
+            {% for setting in settings %}
+            <div class="mb-3">
+                <label for="setting_{{ setting.key }}" class="form-label">{{ setting.description }}</label>
+                <input type="text" class="form-control" id="setting_{{ setting.key }}" name="setting_{{ setting.key }}" value="{{ setting.value }}">
+                {% if setting.key == 'api_url' %}
+                <div class="form-text">API基础URL，用于获取平台列表</div>
+                {% elif setting.key == 'download_path' %}
+                <div class="form-text">下载文件保存路径</div>
+                {% elif setting.key == 'check_interval' %}
+                <div class="form-text">检查直播间状态的间隔时间（秒）</div>
+                {% elif setting.key == 'ffmpeg_path' %}
+                <div class="form-text">FFmpeg可执行文件路径，用于下载直播流</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn btn-primary">保存设置</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
