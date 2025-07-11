@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}屏蔽的平台 - 直播监控系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <ul class="nav nav-pills mb-3">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.platforms') }}">全部平台</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.favorite_platforms') }}">收藏的平台</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('main.blocked_platforms') }}">屏蔽的平台</a>
+            </li>
+        </ul>
+
+        <div class="card">
+            <div class="card-header">已屏蔽的平台列表</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>平台名称</th>
+                                <th class="text-end">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for platform in platforms %}
+                            <tr>
+                                <td>{{ platform.title }}</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-success toggle-block" data-type="platform" data-id="{{ platform.platform_id }}" data-status="{{ platform.is_blocked|int }}">
+                                        <i class="bi bi-check-circle"></i> 取消
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                             {% if not platforms %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted">暂无屏蔽的平台</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

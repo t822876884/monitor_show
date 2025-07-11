@@ -71,11 +71,11 @@
                                 <button class="btn btn-success start-download" data-id="{{ stream.stream_id }}">开始下载</button>
                                 <button class="btn btn-outline-warning toggle-favorite" data-type="livestream" data-id="{{ stream.stream_id }}" data-status="{{ stream.is_favorite|int }}">
                                     <i class="bi {% if stream.is_favorite %}bi-star-fill{% else %}bi-star{% endif %}"></i> 
-                                    {% if stream.is_favorite %}取消收藏{% else %}收藏{% endif %}
+                                    {% if stream.is_favorite %}取消{% else %}收藏{% endif %}
                                 </button>
                                 <button class="btn btn-outline-danger toggle-block" data-type="livestream" data-id="{{ stream.stream_id }}" data-status="{{ stream.is_blocked|int }}">
                                     <i class="bi {% if stream.is_blocked %}bi-x-circle-fill{% else %}bi-x-circle{% endif %}"></i>
-                                    {% if stream.is_blocked %}取消屏蔽{% else %}屏蔽{% endif %}
+                                    {% if stream.is_blocked %}取消{% else %}屏蔽{% endif %}
                                 </button>
                             </div>
                         </div>
